@@ -11,46 +11,46 @@ root = os.path.dirname(os.path.abspath(__file__))
 
 def file_combined(root):
 
-    # Define the directory where your Excel files are located
     directory = os.path.join(root,'data')
 
-    # Get a list of all Excel files in the directory
     excel_files = [file for file in os.listdir(directory) if file.endswith(".xlsx")]
 
-    # Create an empty list to store the dataframes
     dfs = []
 
-    # Iterate through each Excel file
     for file in excel_files:
-        # Construct the file path
         file_path = os.path.join(directory, file)
         
-        # Read the Excel file into a dataframe
         df = pd.read_excel(file_path)
         df.iloc[0] = df.iloc[0].astype(str)
-        df = df.reset_index(drop=True)
+        #df = df.reset_index(drop=True)
         df = df.rename(columns=df.iloc[0]).drop(df.index[0])
         
-        
-        # Append the dataframe to the list
-        dfs.append(df)
+        dfs.append(df.reset_index(drop=True))
 
     # Concatenate all dataframes into a single dataframe
     combined_df = pd.concat(dfs, ignore_index=True)
-    combined_df.to_csv(os.path.join(root,'data_modified','combined.csv'),index=False)
-    list_combined_df = [x for x in combined_df.columns if str(x) != 'nan']
-    combined_df_final = combined_df[list_combined_df]
-    combined_df_final.to_csv(os.path.join(root,'data_modified','combined_df_final.csv'),index=False)
-    combined_df_final = combined_df[list_combined_df].drop_duplicates().reset_index(drop=True)
+    #combined_df = combined_df.reset_index(drop=True)
 
-    return combined_df_final
+     # Drop duplicate rows based on all columns
+    combined_df = combined_df.drop_duplicates()
+
+    # Reset the index and assign a new unique index
+    combined_df = combined_df.reset_index(drop=True)
+    #combined_df.index = pd.RangeIndex(start=0, stop=len(combined_df))
+
+    print(combined_df.index)  # Print the index values
+
+    # Save the combined dataframe to a CSV file
+    combined_df.to_csv(os.path.join(root, 'data_modified', 'combined.csv'), index=False)
+
+    return combined_df
 
 def main():
-    combined_df_final = file_combined(root)
-    print(combined_df_final)
+    combined_df = file_combined(root)
+    print(combined_df)
 
     # Step 1: Load the Excel file using pandas
-    df = combined_df_final
+    df = combined_df
 
     # Step 2: Preprocess the data, if needed
     # Perform any necessary data cleaning, feature engineering, or normalization
